@@ -6,7 +6,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const limiter = new SlidingWindowRateLimiter({
   maxRequests: Number(process.env.RATE_LIMIT_MAX || 5),
-  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000),
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 10_000),
 });
 
 app.set('trust proxy', 1);

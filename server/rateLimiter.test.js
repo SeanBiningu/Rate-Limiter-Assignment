@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { SlidingWindowRateLimiter } = require('./rateLimiter');
 
-function createLimiter({ maxRequests = 3, windowMs = 1000 } = {}) {
+function createLimiter({ maxRequests = 5, windowMs = 10_000 } = {}) {
   let time = 0;
   const limiter = new SlidingWindowRateLimiter({ maxRequests, windowMs, clock: () => time });
   return { limiter, advance: (milliseconds) => { time += milliseconds; } };
@@ -13,8 +13,10 @@ test('allows the first request for a client key', () => {
   assert.equal(limiter.allow('client-a'), true);
 });
 
-test('rejects a burst that exceeds the configured limit', () => {
+test('allows five requests and rejects the sixth request within 10 seconds', () => {
   const { limiter } = createLimiter();
+  assert.equal(limiter.allow('client-a'), true);
+  assert.equal(limiter.allow('client-a'), true);
   assert.equal(limiter.allow('client-a'), true);
   assert.equal(limiter.allow('client-a'), true);
   assert.equal(limiter.allow('client-a'), true);
