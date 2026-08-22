@@ -38,6 +38,13 @@ function App() {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (isRateLimited && requests.length < RATE_LIMIT) {
+      setIsRateLimited(false);
+      setMessage('A request slot is available again.');
+    }
+  }, [isRateLimited, requests.length]);
+
   const sendRequest = async () => {
     setLoading(true);
     try {
