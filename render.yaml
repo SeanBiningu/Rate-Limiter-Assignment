@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: rate-limiter
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:server
+    envVars:
+      - key: NODE_ENV
+        value: production
