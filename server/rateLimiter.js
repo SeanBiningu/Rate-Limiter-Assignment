@@ -1,6 +1,7 @@
 /**
- * In-memory store implementing the small interface a distributed store would use.
- * A Redis-backed adapter, for example, could expose the same get/set/delete methods.
+ * Development-only request store. It mirrors the minimal get/set/delete interface
+ * required by the limiter, so it can be replaced with a shared store (for example,
+ * Redis) when the application runs on multiple server instances.
  */
 class InMemoryRequestStore {
   constructor() {
@@ -35,6 +36,7 @@ class SlidingWindowRateLimiter {
     if (!key) throw new Error('A client key is required');
 
     const now = this.clock();
+    // Discard timestamps outside the rolling window before checking the limit.
     const activeRequests = this.store.get(key).filter((timestamp) => now - timestamp < this.windowMs);
 
     if (activeRequests.length >= this.maxRequests) {
@@ -48,6 +50,8 @@ class SlidingWindowRateLimiter {
   }
 
   cleanup() {
+    // Optional maintenance hook for stores that expose their stored entries.
+    // `allow` already prunes the active client's timestamps on every request.
     const now = this.clock();
     for (const [key, timestamps] of this.store.entries || []) {
       const activeRequests = timestamps.filter((timestamp) => now - timestamp < this.windowMs);

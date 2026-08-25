@@ -8,6 +8,7 @@ function getClientKey() {
   const storageKey = 'rate-limiter-demo-client-key';
   let key = window.localStorage.getItem(storageKey);
   if (!key) {
+    // Persist an anonymous identifier so refreshes count against the same demo quota.
     key = window.crypto?.randomUUID?.() || `client-${Date.now()}-${Math.random()}`;
     window.localStorage.setItem(storageKey, key);
   }
@@ -30,6 +31,7 @@ function App() {
   const activeZone = zoneStyles[zone];
 
   useEffect(() => {
+    // Keep the display in sync as client-side timestamps age out of the window.
     const removeExpiredRequests = () => {
       const now = Date.now();
       setRequests((current) => current.filter((timestamp) => now - timestamp < WINDOW_MS));
@@ -39,6 +41,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Restore the normal status as soon as a request slot becomes available.
     if (isRateLimited && requests.length < RATE_LIMIT) {
       setIsRateLimited(false);
       setMessage('A request slot is available again.');
@@ -51,6 +54,7 @@ function App() {
       const response = await fetch('/api/test', { headers: { 'x-api-key': clientKey } });
       const data = await response.json().catch(() => ({}));
       setIsRateLimited(response.status === 429);
+      // Only successful API calls consume a slot in the client-side visualisation.
       if (response.ok) setRequests((current) => [...current, Date.now()]);
       setMessage(data.message || (response.status === 429 ? 'HTTP 429 Too Many Requests' : 'Request completed'));
     } catch (error) {

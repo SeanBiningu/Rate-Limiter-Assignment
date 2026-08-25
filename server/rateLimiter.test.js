@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { SlidingWindowRateLimiter } = require('./rateLimiter');
 
 function createLimiter({ maxRequests = 5, windowMs = 10_000 } = {}) {
+  // An injected clock lets each test advance time without waiting in real time.
   let time = 0;
   const limiter = new SlidingWindowRateLimiter({ maxRequests, windowMs, clock: () => time });
   return { limiter, advance: (milliseconds) => { time += milliseconds; } };
